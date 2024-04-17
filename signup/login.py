@@ -1,7 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 import subprocess
-import signup
 
 class LoginTerminal(QWidget):
     def __init__(self):
