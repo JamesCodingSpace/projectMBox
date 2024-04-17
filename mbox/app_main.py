@@ -1,5 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QListWidget, QTextEdit, QVBoxLayout, QWidget, QListWidgetItem, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QListWidget, QTextEdit, QVBoxLayout, QWidget, QListWidgetItem, QLabel, QAction, QToolBar, QMenu
+import subprocess
 
 # Dummy-Daten für E-Mail-Liste und E-Mail-Inhalt
 emails = [("Absender 1", "Betreff 1", "Inhalt der E-Mail 1", "01.04.2024"), 
@@ -12,6 +13,8 @@ class EmailClient(QMainWindow):
         self.setWindowTitle("E-Mail Postfach")
         self.setGeometry(100, 100, 800, 600)
 
+        self.create_toolbar()
+        
         splitter = QSplitter(self)
         self.setCentralWidget(splitter)
 
@@ -41,6 +44,58 @@ class EmailClient(QMainWindow):
         sizes = [self.width() // 5 * 4, self.width() // 5]  # 4 Teile für Inhalt, 1 Teil für Liste
         splitter.setSizes(sizes)
 
+    def create_toolbar(self):
+        self.toolbar = self.addToolBar("Toolbar")
+
+        settings_menu = QMenu()
+        logout_action = QAction("Abmelden", self)
+        logout_action.triggered.connect(self.logout)
+        settings_menu.addAction(logout_action)
+        credits_action = QAction("Credits", self)
+        credits_action.triggered.connect(self.show_credits)
+        settings_menu.addAction(credits_action)
+
+        settings_action = QAction("Einstellungen", self)
+        settings_action.setMenu(settings_menu)
+        self.toolbar.addAction(settings_action)
+
+        new_email_action = QAction("E-Mail Schreiben", self)
+        new_email_action.triggered.connect(self.write_email)
+        self.toolbar.addAction(new_email_action)
+
+        self.reply_action = QAction("Antworten", self)
+        self.reply_action.setVisible(False)
+        self.reply_action.triggered.connect(self.reply_email)
+        self.toolbar.addAction(self.reply_action)
+
+        self.forward_action = QAction("Weiterleiten", self)
+        self.forward_action.setVisible(False)
+        self.forward_action.triggered.connect(self.forward_email)
+        self.toolbar.addAction(self.forward_action)
+
+        self.delete_email_action = QAction("E-Mail Löschen", self)
+        self.delete_email_action.triggered.connect(self.delete_email)
+        self.delete_email_action.setVisible(False)  # Die Schaltfläche ist standardmäßig unsichtbar
+        self.toolbar.addAction(self.delete_email_action)
+
+    def write_email(self):
+        print("Neue E-Mail schreiben")
+
+    def reply_email(self):
+        print("Antwort auf E-Mail verfassen")
+
+    def forward_email(self):
+        print("E-Mail weiterleiten")
+
+    def delete_email(self):
+        print("E-Mail löschen")
+
+    def logout(self):
+        subprocess.run(["python", "mbox/settings/logout.py"])
+
+    def show_credits(self):
+        print("Made by NAME, NAME, NAME, NAME; with help of") # DIALOG FENSTER HINZUFÜGEN
+
     def on_email_selected(self):
         # Funktion zum Anzeigen des ausgewählten E-Mail-Inhalts
         selected_item = self.email_list.currentItem()
@@ -50,6 +105,11 @@ class EmailClient(QMainWindow):
             email_info_text = f"Absender: {sender}\nBetreff: {subject}\nSendedatum: {sent_date}"
             self.email_info.setText(email_info_text)
             self.email_content.setPlainText(content)
+            self.toolbar.removeAction(self.delete_email_action)
+            self.toolbar.addAction(self.delete_email_action)
+            self.reply_action.setVisible(True)
+            self.forward_action.setVisible(True)
+            self.delete_email_action.setVisible(True)
 
 
 def main():

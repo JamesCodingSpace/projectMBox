@@ -13,7 +13,7 @@ def logout():
 
         # Task schließen (für Windows)
         os.system("taskkill /f /im python.exe")
-        subprocess.run(["python", "mbox/app_main_test.py"])
+        subprocess.run(["python", "mbox/app_main.py"])
 
 # GUI initialisieren
 app = QApplication(sys.argv)

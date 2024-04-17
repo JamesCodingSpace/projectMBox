@@ -45,7 +45,8 @@ class LoginTerminal(QWidget):
                     if user_info["Passwort"] == password:
                         self.save_loggedin_user(username)
                         QMessageBox.information(self, "Login erfolgreich", f"Herzlich willkommen, {username}!")
-                        return
+                        subprocess.run(["python", "mbox/app_main.py"])
+                        sys.exit(app.exec_())
                     else:
                         QMessageBox.warning(self, "Login fehlgeschlagen", "Ungültiges Passwort.")
                         return
