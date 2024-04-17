@@ -1,0 +1,20 @@
+E-Mail Postfach mit GUI
+- E-Mails sortierbar nach:
+  - Absender
+  - Sendedatum
+  - Title/Betreff
+  - sonstige
+
+- Anhang? (Togglebar in Einstellungen)
+- E-Mail Inhalt Anzeige
+- E-Mails löschen/erstellen
+- Programm beenden mit Abspeichern (Abspeicherung in txt file?)
+/ Passwort Login (+ User erstellung) 
+ 
+
+Datenbank mit vorgefertigten E-Mails
+
+
+
+
+pip install PyQt5
