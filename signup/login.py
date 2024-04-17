@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 import subprocess
+import os
 
 class LoginTerminal(QWidget):
     def __init__(self):
@@ -42,6 +43,7 @@ class LoginTerminal(QWidget):
                 user_info = {x.split(": ")[0]: x.split(": ")[1] for x in info}
                 if user_info["Benutzername"] == username or user_info["E-Mail"] == username:
                     if user_info["Passwort"] == password:
+                        self.save_loggedin_user(username)
                         QMessageBox.information(self, "Login erfolgreich", f"Herzlich willkommen, {username}!")
                         return
                     else:
@@ -51,6 +53,10 @@ class LoginTerminal(QWidget):
 
     def open_registration(self):
         subprocess.run(["python", "signup/signup.py"])
+
+    def save_loggedin_user(self, username):
+        with open("mbox/settings/settings.txt", "w") as file:
+            file.write(f"Benutzername: {username}\n")    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
