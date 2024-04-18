@@ -8,7 +8,7 @@ E-Mail Postfach mit GUI
 
 / E-Mail Inhalt Anzeige
 - E-Mails löschen/erstellen
-- Programm beenden mit Abspeichern (Abspeicherung in txt file?)
+/ Programm beenden mit Abspeichern (Abspeicherung in txt file?)
 / Passwort Login (+ User erstellung) 
  
 
@@ -17,6 +17,6 @@ Datenbank mit vorgefertigten E-Mails
 Settings:
 Abmelden: öffnet ein Fenster welches den Nutzer abmeldet - ERLEDIGT
 Credits: soll ein Fenster öffnen, welches die Ersteller des Programms würdigt
-
+Shutdown: Schließt das Programm
 
 py -m pip install PyQt5
