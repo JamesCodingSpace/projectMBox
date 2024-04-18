@@ -1,18 +1,19 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 import subprocess
-import os
-
 import sys
+import sqlite3
+
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+
+import os
 sys.path.append("mbox/settings")
 from pid import pid_new_id, pid_search
-
-
 
 class LoginTerminal(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Login Terminal")
         self.init_ui()
+        self.create_database()
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -38,24 +39,36 @@ class LoginTerminal(QWidget):
 
         self.setLayout(layout)
 
+    def create_database(self):
+        self.connection = sqlite3.connect("signup/logins.db")
+        self.cursor = self.connection.cursor()
+
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS logins (
+                                id INTEGER PRIMARY KEY,
+                                username TEXT NOT NULL,
+                                email TEXT NOT NULL,
+                                password TEXT NOT NULL
+                             )''')
+        self.connection.commit()
+
     def login(self):
         username = self.username_input.text()
         password = self.password_input.text()
 
-        with open("signup/logins.txt", "r") as file:
-            for line in file:
-                info = line.strip().split(", ")
-                user_info = {x.split(": ")[0]: x.split(": ")[1] for x in info}
-                if user_info["Benutzername"] == username or user_info["E-Mail"] == username:
-                    if user_info["Passwort"] == password:
-                        self.save_loggedin_user(username)
-                        QMessageBox.information(self, "Login erfolgreich", f"Herzlich willkommen, {username}!")
-                        subprocess.run(["python", "mbox/app_main.py"])
-                        sys.exit(app.exec_())
-                    else:
-                        QMessageBox.warning(self, "Login fehlgeschlagen", "Ungültiges Passwort.")
-                        return
-        QMessageBox.warning(self, "Login fehlgeschlagen", "Benutzer nicht gefunden.")
+        self.cursor.execute("SELECT * FROM logins WHERE username=? OR email=?", (username, username))
+        user_info = self.cursor.fetchone()
+
+        if user_info:
+            stored_password = user_info[3]
+            if password == stored_password:
+                self.save_loggedin_user(username)
+                QMessageBox.information(self, "Login erfolgreich", f"Herzlich willkommen, {username}!")
+                subprocess.run(["python", "mbox/app_main.py"])
+                sys.exit(app.exec_())
+            else:
+                QMessageBox.warning(self, "Login fehlgeschlagen", "Ungültiges Passwort.")
+        else:
+            QMessageBox.warning(self, "Login fehlgeschlagen", "Benutzer nicht gefunden.")
 
     def open_registration(self):
         subprocess.run(["python", "signup/signup.py"])
@@ -64,12 +77,15 @@ class LoginTerminal(QWidget):
         with open("mbox/settings/settings.txt", "w") as file:
             file.write(f"Benutzername: {username}\n")    
 
+    def __del__(self):
+        self.connection.close()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginTerminal()
     window.show()
     with open("mbox/settings/settings.txt", "w") as file:
-            file.write("Logged Out")
+        file.write("Logged Out")
     pid = os.getpid()
     pid_new_id("login.py", pid)
     sys.exit(app.exec_())

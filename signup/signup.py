@@ -1,4 +1,5 @@
 import sys
+import sqlite3
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 
 class RegisterTerminal(QWidget):
@@ -6,6 +7,7 @@ class RegisterTerminal(QWidget):
         super().__init__()
         self.setWindowTitle("Registrierung")
         self.init_ui()
+        self.create_database()
 
     def init_ui(self):
         layout = QVBoxLayout()
@@ -32,6 +34,18 @@ class RegisterTerminal(QWidget):
 
         self.setLayout(layout)
 
+    def create_database(self):
+        self.connection = sqlite3.connect("signup/logins.db")
+        self.cursor = self.connection.cursor()
+
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS logins (
+                                id INTEGER PRIMARY KEY,
+                                username TEXT NOT NULL,
+                                email TEXT NOT NULL,
+                                password TEXT NOT NULL
+                             )''')
+        self.connection.commit()
+
     def register(self):
         name = self.name_input.text()
         email = self.email_input.text()
@@ -40,20 +54,18 @@ class RegisterTerminal(QWidget):
         if self.check_existing(email, name):
             QMessageBox.warning(self, "Registrierung fehlgeschlagen", "Die E-Mail oder der Benutzername existieren bereits.")
         else:
-            self.save_to_file(name, email, password)
+            self.save_to_database(name, email, password)
             QMessageBox.information(self, "Registrierung erfolgreich", "Ihr Konto wurde erfolgreich erstellt.")
             sys.exit(app.exec_())
 
     def check_existing(self, email, name):
-        with open("signup/logins.txt", "r") as file:
-            for line in file:
-                if email in line or name in line:
-                    return True
-        return False
+        self.cursor.execute("SELECT * FROM logins WHERE email=? OR username=?", (email, name))
+        user_info = self.cursor.fetchone()
+        return user_info is not None
 
-    def save_to_file(self, name, email, password):
-        with open("signup/logins.txt", "a") as file:
-            file.write(f"Benutzername: {name}, E-Mail: {email}, Passwort: {password}\n")
+    def save_to_database(self, name, email, password):
+        self.cursor.execute("INSERT INTO logins (username, email, password) VALUES (?, ?, ?)", (name, email, password))
+        self.connection.commit()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

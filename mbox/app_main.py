@@ -84,7 +84,7 @@ class EmailClient(QMainWindow):
 
         self.delete_email_action = QAction("E-Mail Löschen", self)
         self.delete_email_action.triggered.connect(self.delete_email)
-        self.delete_email_action.setVisible(False)  # Die Schaltfläche ist standardmäßig unsichtbar
+        self.delete_email_action.setVisible(False)
         self.toolbar.addAction(self.delete_email_action)
 
     def write_email(self):
@@ -103,7 +103,7 @@ class EmailClient(QMainWindow):
         subprocess.run(["python", "mbox/settings/logout.py"])
 
     def show_credits(self):
-        print("Made by NAME, NAME, NAME, NAME; with help of") # DIALOG FENSTER HINZUFÜGEN
+        subprocess.run(["python", "mbox/settings/credits.py"])
 
     def shutdown(self):
         with open("mbox/settings/settings.txt", "w") as file:
