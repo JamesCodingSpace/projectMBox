@@ -1,16 +1,13 @@
 import sys
+import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QListWidget, QTextEdit, QVBoxLayout, QWidget, QListWidgetItem, QLabel, QAction, QToolBar, QMenu
 import subprocess
 import os
 import signal
+from PyQt5.QtCore import Qt
 
 sys.path.append("mbox/settings")
 from pid import pid_new_id, pid_search, get_user
-
-# Dummy-Daten für E-Mail-Liste und E-Mail-Inhalt
-emails = [("Absender 1", "Betreff 1", "Inhalt der E-Mail 1", "01.04.2024"), 
-          ("Absender 2", "Betreff 2", "Inhalt der E-Mail 2", "02.04.2024"), 
-          ("Absender 3", "Betreff 3", "Inhalt der E-Mail 3", "03.04.2024")]
 
 class EmailClient(QMainWindow):
     def __init__(self):
@@ -20,35 +17,31 @@ class EmailClient(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
 
         self.create_toolbar()
-        
+
         splitter = QSplitter(self)
         self.setCentralWidget(splitter)
 
-        # Linkes Layout für Absender, Betreff und Sendedatum
         left_layout = QVBoxLayout()
+
         self.email_info = QLabel()
         left_layout.addWidget(self.email_info)
 
-        # Rechte Spalte für E-Mail-Inhalt
         self.email_content = QTextEdit()
+        self.email_content.setReadOnly(True)
         splitter.addWidget(self.email_content)
 
-        # Linke Spalte für E-Mail-Liste
         self.email_list = QListWidget()
-        for sender, subject, _, _ in emails:
-            item = QListWidgetItem(f"{sender}\n{subject}")
-            self.email_list.addItem(item)
         self.email_list.itemSelectionChanged.connect(self.on_email_selected)
         left_layout.addWidget(self.email_list)
 
-        # Widget für das linke Layout erstellen
         left_widget = QWidget()
         left_widget.setLayout(left_layout)
         splitter.addWidget(left_widget)
 
-        # Setze das Verhältnis des Splitters (4:1)
-        sizes = [self.width() // 5 * 4, self.width() // 5]  # 4 Teile für Inhalt, 1 Teil für Liste
+        sizes = [self.width() // 5 * 4, self.width() // 5]
         splitter.setSizes(sizes)
+
+        self.load_emails(username)
 
     def create_toolbar(self):
         self.toolbar = self.addToolBar("Toolbar")
@@ -87,8 +80,26 @@ class EmailClient(QMainWindow):
         self.delete_email_action.setVisible(False)
         self.toolbar.addAction(self.delete_email_action)
 
+    def load_emails(self, username):
+        # Verbindung zur Datenbank herstellen
+        conn = sqlite3.connect('mbox/emails.db')
+        cursor = conn.cursor()
+
+        # Abfrage ausführen, um E-Mails des Benutzers abzurufen
+        cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username}")
+        emails = cursor.fetchall()
+
+        # E-Mails zur Liste hinzufügen
+        for email in emails:
+            eid, sender, subject, _, _ = email
+            item = QListWidgetItem(f"{sender}\n{subject}")
+            item.setData(Qt.UserRole, eid)  # ID des Eintrags als Benutzerdaten setzen
+            self.email_list.addItem(item)
+
+        conn.close()
+
     def write_email(self):
-        print("Neue E-Mail schreiben")
+        subprocess.run(["python", "mbox/toolbar/send_mail.py"])
 
     def reply_email(self):
         print("Antwort auf E-Mail verfassen")
@@ -111,19 +122,27 @@ class EmailClient(QMainWindow):
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
 
     def on_email_selected(self):
-        # Funktion zum Anzeigen des ausgewählten E-Mail-Inhalts
         selected_item = self.email_list.currentItem()
+        username = get_user()
         if selected_item:
-            index = self.email_list.row(selected_item)
-            sender, subject, content, sent_date = emails[index]
-            email_info_text = f"Absender: {sender}\nBetreff: {subject}\nSendedatum: {sent_date}"
-            self.email_info.setText(email_info_text)
-            self.email_content.setPlainText(content)
-            self.toolbar.removeAction(self.delete_email_action)
-            self.toolbar.addAction(self.delete_email_action)
-            self.reply_action.setVisible(True)
-            self.forward_action.setVisible(True)
-            self.delete_email_action.setVisible(True)
+            eid = selected_item.data(Qt.UserRole)  # Die ID des ausgewählten Elements abrufen
+            conn = sqlite3.connect("mbox/emails.db")
+            cursor = conn.cursor()
+            cursor.execute(f"SELECT sender, subject, content, sent_date FROM {username} WHERE eid = {eid}")
+            result = cursor.fetchone()
+            conn.close()
+
+            if result:
+                sender, subject, content, sent_date = result
+                email_info_text = f"Absender: {sender}\nBetreff: {subject}\nSendedatum: {sent_date}"
+                self.email_info.setText(email_info_text)
+                self.email_content.setPlainText(content)
+                self.toolbar.removeAction(self.delete_email_action)
+                self.toolbar.addAction(self.delete_email_action)
+                self.reply_action.setVisible(True)
+                self.forward_action.setVisible(True)
+                self.delete_email_action.setVisible(True)
+
 
 
 def main():
