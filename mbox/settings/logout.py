@@ -15,6 +15,9 @@ def logout():
             file.write("Logged Out")
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
         subprocess.run(["python", "signup/login.py"])
+    if confirm == QMessageBox.No: 
+        os.kill(pid_search("app_main.py"))
+        subprocess.run(["python", "mbox/app_main.py"])
 
 # GUI initialisieren
 app = QApplication(sys.argv)
