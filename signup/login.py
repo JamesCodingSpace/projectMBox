@@ -1,7 +1,12 @@
-import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 import subprocess
 import os
+
+import sys
+sys.path.append("mbox/settings")
+from pid import pid_new_id, pid_search
+
+
 
 class LoginTerminal(QWidget):
     def __init__(self):
@@ -63,4 +68,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginTerminal()
     window.show()
+    with open("mbox/settings/settings.txt", "w") as file:
+            file.write("Logged Out")
+    pid = os.getpid()
+    pid_new_id("login.py", pid)
     sys.exit(app.exec_())

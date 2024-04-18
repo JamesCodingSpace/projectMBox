@@ -2,6 +2,9 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMessageBox
 import os
 import subprocess
+import signal
+sys.path.append("mbox/settings")
+from pid import pid_search
 
 def logout():
     confirm = QMessageBox.question(None, "Abmelden", "Möchten Sie sich wirklich abmelden?",
@@ -10,10 +13,8 @@ def logout():
         # Datei überschreiben
         with open("mbox/settings/settings.txt", "w") as file:
             file.write("Logged Out")
-
-        # Task schließen (für Windows)
-        os.system("taskkill /f /im python.exe")
-        subprocess.run(["python", "mbox/app_main.py"])
+        os.kill(pid_search("app_main.py"), signal.SIGTERM)
+        subprocess.run(["python", "signup/login.py"])
 
 # GUI initialisieren
 app = QApplication(sys.argv)

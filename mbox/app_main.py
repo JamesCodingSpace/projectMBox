@@ -1,6 +1,11 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QListWidget, QTextEdit, QVBoxLayout, QWidget, QListWidgetItem, QLabel, QAction, QToolBar, QMenu
 import subprocess
+import os
+import signal
+
+sys.path.append("mbox/settings")
+from pid import pid_new_id, pid_search, get_user
 
 # Dummy-Daten für E-Mail-Liste und E-Mail-Inhalt
 emails = [("Absender 1", "Betreff 1", "Inhalt der E-Mail 1", "01.04.2024"), 
@@ -9,8 +14,9 @@ emails = [("Absender 1", "Betreff 1", "Inhalt der E-Mail 1", "01.04.2024"),
 
 class EmailClient(QMainWindow):
     def __init__(self):
+        username = get_user()
         super().__init__()
-        self.setWindowTitle("E-Mail Postfach")
+        self.setWindowTitle(f"E-Mail Postfach von {username}")
         self.setGeometry(100, 100, 800, 600)
 
         self.create_toolbar()
@@ -54,6 +60,9 @@ class EmailClient(QMainWindow):
         credits_action = QAction("Credits", self)
         credits_action.triggered.connect(self.show_credits)
         settings_menu.addAction(credits_action)
+        shutdown_action = QAction("Schließen", self)
+        shutdown_action.triggered.connect(self.shutdown)
+        settings_menu.addAction(shutdown_action)
 
         settings_action = QAction("Einstellungen", self)
         settings_action.setMenu(settings_menu)
@@ -96,6 +105,11 @@ class EmailClient(QMainWindow):
     def show_credits(self):
         print("Made by NAME, NAME, NAME, NAME; with help of") # DIALOG FENSTER HINZUFÜGEN
 
+    def shutdown(self):
+        with open("mbox/settings/settings.txt", "w") as file:
+            file.write("Logged Out")
+        os.kill(pid_search("app_main.py"), signal.SIGTERM)
+
     def on_email_selected(self):
         # Funktion zum Anzeigen des ausgewählten E-Mail-Inhalts
         selected_item = self.email_list.currentItem()
@@ -116,6 +130,9 @@ def main():
     app = QApplication(sys.argv)
     client = EmailClient()
     client.show()
+    pid = os.getpid()
+    pid_new_id("app_main.py", pid)
+    os.kill(pid_search("login.py"), signal.SIGTERM)
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
