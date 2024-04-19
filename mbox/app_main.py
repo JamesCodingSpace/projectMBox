@@ -107,8 +107,14 @@ class EmailClient(QMainWindow):
     def forward_email(self):
         print("E-Mail weiterleiten")
 
-    def delete_email(self):
-        print("E-Mail löschen")
+    def delete_email(self, eid):
+        for index in range(self.email_list.count()):
+            item = self.email_list.item(index)
+            if item.data(Qt.UserRole) == eid:
+                self.email_list.takeItem(index)
+                break
+
+
 
     def logout(self):
         subprocess.run(["python", "mbox/settings/logout.py"])
