@@ -67,16 +67,25 @@ class EmailClient(QMainWindow):
         self.toolbar.addSeparator()
 
         settings_menu = QMenu()
+        deleted_mails = QAction("Gelöschte E-Mails", self)
+        deleted_mails.triggered.connect(self.deleted_email_screen)
+        settings_menu.addAction(deleted_mails)
+        change_theme = QAction("Design verändern", self)
+        change_theme.triggered.connect(self.change_theme_action)
+        settings_menu.addAction(change_theme)
+        account_information = QAction("Account Info ändern", self)
+        account_information.triggered.connect(self.change_account_information)
+        settings_menu.addAction(account_information)
         logout_action = QAction("Abmelden", self)
         logout_action.triggered.connect(self.logout)
         settings_menu.addAction(logout_action)
-        credits_action = QAction("Credits", self)
-        credits_action.triggered.connect(self.show_credits)
-        settings_menu.addAction(credits_action)
         shutdown_action = QAction("Schließen", self)
         shutdown_action.triggered.connect(self.shutdown)
         settings_menu.addAction(shutdown_action)
-
+        credits_action = QAction("Credits", self)
+        credits_action.triggered.connect(self.show_credits)
+        settings_menu.addAction(credits_action)
+    
         settings_action = QAction("Einstellungen", self)
         settings_action.setMenu(settings_menu)
         self.toolbar.addAction(settings_action)
@@ -122,10 +131,33 @@ class EmailClient(QMainWindow):
         subprocess.run(["python", "mbox/toolbar/send_mail.py"])
 
     def reply_email(self):
-        print("Antwort auf E-Mail verfassen")
+        selected_item = self.email_list.currentItem()
+        eid = selected_item.data(Qt.UserRole)
+        username = get_user()
+        conn = sqlite3.connect("mbox/emails.db")
+        cursor = conn.cursor()
+
+        with open("mbox/toolbar/email_data.tmp", "w") as file:
+            cursor.execute(f"SELECT sender, subject, content FROM {username} WHERE eid = {eid}")
+            for row in cursor.fetchall():
+                sender, subject, content = row
+                file.write(f"Sender: {sender}\n")
+                file.write(f"Subject: {subject}\n")
+                file.write(f"Content: {content}\n")
+            conn.close()
+        subprocess.run(["python", "mbox/toolbar/answer_mail.py"])
 
     def forward_email(self):
-        print("E-Mail weiterleiten")
+        None
+
+    def deleted_email_screen (self):
+        None
+
+    def change_theme_action(self):
+        None
+
+    def change_account_information(self):
+        None
 
     def delete_email(self):
         selected_item = self.email_list.currentItem()
@@ -139,7 +171,8 @@ class EmailClient(QMainWindow):
 
             # Tabelle "deletedMails" erstellen, falls sie nicht existiert
             cursor.execute('''CREATE TABLE IF NOT EXISTS deletedMails (
-                                eid INTEGER PRIMARY KEY,
+                                id INTEGER PRIMARY KEY,
+                                eid FLOAT,
                                 sender TEXT,
                                 subject TEXT,
                                 content TEXT,
@@ -148,7 +181,7 @@ class EmailClient(QMainWindow):
                             )''')
 
             # E-Mail aus der Tabelle des Benutzers abrufen
-            cursor.execute(f"SELECT sender, subject, content, sent_date FROM {username} WHERE eid = ?", (eid,))
+            cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username} WHERE eid = ?", (eid,))
             email = cursor.fetchone()
 
             if email:

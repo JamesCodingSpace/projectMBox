@@ -1,13 +1,20 @@
+High Prio:
+mails weiterleiten {same framework as answer_mail.py}
+
+
+Mid Prio:
 gelöschte Emails anschauen + recovern
-mails weiterleiten
-auf mails antworten
+reload button? (emails aktuallisieren) -> eigentlich unnötig, aber für testing ganz geil
+settings.txt + pids.txt + theme.txt(?) -> settings.db
 
-Theme verändern?
-delete account?
-change password?
-change email?
-change username?
+Low Prio:
+Theme verändern? -> Butter der durchswitched ziwschen Hell und Dunkel
+delete account? -> Passwortabfrage als Bestätigung
+change password? -> nur von login zugegriffen (delete acc maybe auch bald)
+change email? -> easy, da mail nur optisch vorhanden
+change username? -> hart, da mails auf Nutzernamen DB gespeichert wird
+login log? -> Uhrzeiten dokumentieren, wann sich wer angemeldet hat (kinda useless, aber als letztes hab keine Idee mehr gut)
+Verschlüsselung Passwörter
 
-benötigt:
+benötigt zum ausführen:
 py -m pip install PyQt5
-py -m pip install colorama

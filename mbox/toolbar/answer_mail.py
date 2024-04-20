@@ -2,24 +2,23 @@ import sys
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QTextEdit, QPushButton, QListWidget, QListWidgetItem, QHBoxLayout
 from datetime import datetime
-import random
 import os
 import signal
+import random
 
 sys.path.append("mbox/settings")
 from pid import pid_new_id, pid_search, get_user
 
 
-class EmailComposer(QMainWindow):
+class EmailReply(QMainWindow):
     def __init__(self):
-        username = get_user()
         super().__init__()
-        self.setWindowTitle("Neue E-Mail verfassen")
+        self.setWindowTitle("Antworten auf E-Mail")
+        username = get_user()
         self.setGeometry(100, 100, 600, 400)
 
         main_layout = QHBoxLayout()
 
-        # Layout für Eingabefelder
         input_layout = QVBoxLayout()
 
         self.sender_label = QLabel(f"Absender: {username}")
@@ -40,9 +39,9 @@ class EmailComposer(QMainWindow):
         input_layout.addWidget(self.content_label)
         input_layout.addWidget(self.content_input)
 
-        self.send_button = QPushButton("Senden")
-        self.send_button.clicked.connect(self.send_email)
-        input_layout.addWidget(self.send_button)
+        self.reply_button = QPushButton("Antworten")
+        self.reply_button.clicked.connect(self.send_reply)
+        input_layout.addWidget(self.reply_button)
 
         main_layout.addLayout(input_layout)
 
@@ -64,15 +63,12 @@ class EmailComposer(QMainWindow):
         self.setCentralWidget(widget)
 
     def populate_user_list(self):
-        # Verbindung zur SQLite-Datenbank herstellen
         connection = sqlite3.connect('signup/logins.db')
         cursor = connection.cursor()
 
-        # SQL-Abfrage zum Abrufen aller Benutzernamen und E-Mail-Adressen
         sql_query = "SELECT username, email FROM logins"
         cursor.execute(sql_query)
 
-        # Alle Benutzer und deren E-Mails der Liste hinzufügen
         for row in cursor.fetchall():
             username, email = row
             item = QListWidgetItem(f"{username} ({email})")
@@ -87,28 +83,9 @@ class EmailComposer(QMainWindow):
             username = username_email.split(' ')[0]
             self.recipient_input.setText(username)
 
-    def search_in_db(self, recipient):
-        # Verbindung zur SQLite-Datenbank herstellen
-        connection = sqlite3.connect('signup/logins.db')
-        cursor = connection.cursor()
-
-        # SQL-Abfrage zum Suchen der Eingabe in den Spalten 1 und 2
-        sql_query = "SELECT username FROM logins WHERE username = ? OR email = ?"
-        cursor.execute(sql_query, (recipient, recipient))
-
-        # Den Inhalt der ersten Spalte ausgeben, wenn ein Treffer gefunden wurde
-        result = cursor.fetchone()
-        if result:
-            connection.close()
-            return result[0]
-        else:
-            connection.close()
-            return None
-
-    def send_email(self):
+    def send_reply(self):
         sender = get_user()
-        recipient_input = self.recipient_input.text()
-        recipient = self.search_in_db(recipient_input)
+        recipient = self.recipient_input.text()
         subject = self.subject_input.text()
         content = self.content_input.toPlainText()
 
@@ -116,28 +93,46 @@ class EmailComposer(QMainWindow):
             print("Bitte füllen Sie alle Felder aus.")
             return
 
-        conn = sqlite3.connect('mbox/emails.db')
+        conn = sqlite3.connect("mbox/emails.db")
         cursor = conn.cursor()
 
         sent_date = datetime.now()
         rndm_eid = random.randint(1,1000000000000)
 
-        # Einfügen der E-Mail in die Datenbank
         cursor.execute(f"INSERT INTO {recipient} (eid, sender, subject, content, sent_date) VALUES (?, ?, ?, ?, ?)",
                        (rndm_eid, sender, subject, content, sent_date))
         conn.commit()
         conn.close()
 
-        os.kill(pid_search("send_mail.py"), signal.SIGTERM)
+        os.kill(pid_search("answer_mail.py"), signal.SIGTERM)
 
 
 def main():
     app = QApplication(sys.argv)
-    composer = EmailComposer()
-    composer.show()
-    pid = os.getpid()
-    pid_new_id("send_mail.py", pid)
-    sys.exit(app.exec_())
+    with open("mbox/toolbar/email_data.tmp", "r") as file:
+        data = file.read().splitlines()   
+    sender = None
+    subject = None
+    content = None
+    for line in data:
+        if line.startswith("Sender:"):
+            sender = line.split(": ")[1]
+        elif line.startswith("Subject:"):
+            subject = line.split(": ")[1]
+        elif line.startswith("Content:"):
+            content = line.split(": ")[1]
+    os.remove("mbox/toolbar/email_data.tmp")
+
+    if sender and subject and content:
+        reply_window = EmailReply()
+        reply_window.recipient_input.setText(sender)
+        reply_window.subject_input.setText("Re: " + subject)
+        reply_window.content_input.setPlainText(f"\n\nSie schrieben mir:\n" + content)
+        reply_window.show()
+        pid = os.getpid()
+        pid_new_id("answer_mail.py", pid)
+        sys.exit(app.exec_())
+    
 
 
 if __name__ == "__main__":

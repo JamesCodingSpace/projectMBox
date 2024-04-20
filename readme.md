@@ -23,27 +23,31 @@ Zur Erstellung wurde VS Code verwendet und folgende libarys müssen zusätzlich 
 
 Stand jetzt gibt es folgende Funktionen, welche auch funktionieren sollten:
 - Login Terminal + Regestrierung verschiedener Benutzer
-- Benutzeroberfläche (nur optisch)
-- Anzeige Email Betreff/Sender/Datum/Inhalt
+- Benutzeroberfläche
+- Anzeige Email Betreff/Sender/Datum/Inhalt + Sortierbar nach Sender/Datum/Betreff
+- Senden, Antworten von Emails
+- Löschen von Emails
 - Logout
 - Shutdown
+- Credits
 
 ****
 # Geplant
 
 Muss
-- Sortierung E-Mails
-- Senden von E-Mails
-- Antworten auf E-Mails
 - Weiterleiten von E-Mails
-- Löschen von E-Mails
-- Verschiedene Benutzerkonten mit verschiedenen E-Mails
+- Gelöschte Emails anschauen + recovern
+- Aktuallisierungs Button
 
 Soll
 - Verschlüsselte Passwörter bei Anmeldung
+- Delete Account
+- Change Account Information
 
 Kann
 - Anhang zu E-Mails hinzufügbar
+- DesignTheme verändern
+- Login Log
 
 ****
 # Technische Fragen
