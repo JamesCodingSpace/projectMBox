@@ -1,13 +1,4 @@
-E-Mail Postfach mit GUI
-- E-Mails sortierbar nach:
-  - Absender
-  - Sendedatum
-  - Title/Betreff
-  - sonstige
-
-- E-Mails löschen/erstellen
-
-Datenbank mit vorgefertigten E-Mails
+- E-Mails löschen
 
 benötigt:
 py -m pip install PyQt5

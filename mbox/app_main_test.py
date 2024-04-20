@@ -131,7 +131,39 @@ class EmailClient(QMainWindow):
         selected_item = self.email_list.currentItem()
         if selected_item:
             eid = selected_item.data(Qt.UserRole)
-            # Code zur Löschung der E-Mail mit der entsprechenden eid
+            username = get_user()
+
+            # Verbindung zur Datenbank herstellen
+            conn = sqlite3.connect('mbox/emails.db')
+            cursor = conn.cursor()
+
+            # Tabelle "deletedMails" erstellen, falls sie nicht existiert
+            cursor.execute('''CREATE TABLE IF NOT EXISTS deletedMails (
+                                eid INTEGER PRIMARY KEY,
+                                sender TEXT,
+                                subject TEXT,
+                                content TEXT,
+                                sent_date TEXT,
+                                deletedFrom TEXT
+                            )''')
+
+            # E-Mail aus der Tabelle des Benutzers abrufen
+            cursor.execute(f"SELECT sender, subject, content, sent_date FROM {username} WHERE eid = ?", (eid,))
+            email = cursor.fetchone()
+
+            if email:
+                # E-Mail in die Tabelle "deletedMails" einfügen
+                cursor.execute(f"INSERT INTO deletedMails (eid, sender, subject, content, sent_date, deletedFrom) VALUES (?, ?, ?, ?, ?, ?)",
+                                (eid, *email, username))
+                # E-Mail aus der Tabelle des Benutzers löschen
+                cursor.execute(f"DELETE FROM {username} WHERE eid = ?", (eid,))
+                conn.commit()
+
+                # Element aus der Liste entfernen
+                self.email_list.takeItem(self.email_list.currentRow())
+
+            conn.close()
+
 
     def logout(self):
         subprocess.run(["python", "mbox/settings/logout.py"])
