@@ -1,4 +1,12 @@
-- E-Mails löschen
+gelöschte Emails anschauen + recovern
+mails weiterleiten
+auf mails antworten
+
+Theme verändern?
+delete account?
+change password?
+change email?
+change username?
 
 benötigt:
 py -m pip install PyQt5
