@@ -25,8 +25,9 @@ Stand jetzt gibt es folgende Funktionen, welche auch funktionieren sollten:
 - Login Terminal + Regestrierung verschiedener Benutzer
 - Benutzeroberfläche
 - Anzeige Email Betreff/Sender/Datum/Inhalt + Sortierbar nach Sender/Datum/Betreff
-- Senden, Antworten von Emails
+- Senden, Antworten, Weiterleiten von Emails
 - Löschen von Emails
+- Reload von Emails
 - Logout
 - Shutdown
 - Credits

@@ -76,6 +76,9 @@ class EmailClient(QMainWindow):
         account_information = QAction("Account Info ändern", self)
         account_information.triggered.connect(self.change_account_information)
         settings_menu.addAction(account_information)
+        reload_mail = QAction("E-Mails Aktualisieren", self)
+        reload_mail.triggered.connect(self.reload_emails)
+        settings_menu.addAction(reload_mail)
         logout_action = QAction("Abmelden", self)
         logout_action.triggered.connect(self.logout)
         settings_menu.addAction(logout_action)
@@ -110,45 +113,48 @@ class EmailClient(QMainWindow):
         self.toolbar.addAction(self.delete_email_action)
 
     def load_emails(self, username):
-        # Verbindung zur Datenbank herstellen
         conn = sqlite3.connect('mbox/emails.db')
         cursor = conn.cursor()
-
-        # Abfrage ausführen, um E-Mails des Benutzers abzurufen
         cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username} ORDER BY sent_date DESC")
         emails = cursor.fetchall()
-
-        # E-Mails zur Liste hinzufügen
         for email in emails:
             eid, sender, subject, _, _ = email
             item = QListWidgetItem(f"{sender}\n{subject}")
-            item.setData(Qt.UserRole, eid)  # ID des Eintrags als Benutzerdaten setzen
+            item.setData(Qt.UserRole, eid)
             self.email_list.addItem(item)
-
         conn.close()
 
     def write_email(self):
         subprocess.run(["python", "mbox/toolbar/send_mail.py"])
 
-    def reply_email(self):
+    def get_email_data(self):
         selected_item = self.email_list.currentItem()
         eid = selected_item.data(Qt.UserRole)
         username = get_user()
         conn = sqlite3.connect("mbox/emails.db")
         cursor = conn.cursor()
-
         with open("mbox/toolbar/email_data.tmp", "w") as file:
-            cursor.execute(f"SELECT sender, subject, content FROM {username} WHERE eid = {eid}")
+            cursor.execute(f"SELECT sender, subject, content, sent_date FROM {username} WHERE eid = {eid}")
             for row in cursor.fetchall():
-                sender, subject, content = row
+                sender, subject, content, sent_date = row
                 file.write(f"Sender: {sender}\n")
                 file.write(f"Subject: {subject}\n")
                 file.write(f"Content: {content}\n")
+                file.write(f"Date: {sent_date}\n")
             conn.close()
+
+    def reply_email(self):
+        self.get_email_data()
         subprocess.run(["python", "mbox/toolbar/answer_mail.py"])
 
     def forward_email(self):
-        None
+        self.get_email_data()
+        subprocess.run(["python", "mbox/toolbar/forward_mail.py"])
+
+    def reload_emails(self):
+        username = get_user()
+        self.email_list.clear()
+        self.load_emails(username)
 
     def deleted_email_screen (self):
         None
@@ -157,7 +163,7 @@ class EmailClient(QMainWindow):
         None
 
     def change_account_information(self):
-        None
+        subprocess.run(["python","mbox/toolbar/check_user_password.py"])
 
     def delete_email(self):
         selected_item = self.email_list.currentItem()
@@ -165,11 +171,9 @@ class EmailClient(QMainWindow):
             eid = selected_item.data(Qt.UserRole)
             username = get_user()
 
-            # Verbindung zur Datenbank herstellen
             conn = sqlite3.connect('mbox/emails.db')
             cursor = conn.cursor()
 
-            # Tabelle "deletedMails" erstellen, falls sie nicht existiert
             cursor.execute('''CREATE TABLE IF NOT EXISTS deletedMails (
                                 id INTEGER PRIMARY KEY,
                                 eid FLOAT,
@@ -180,19 +184,15 @@ class EmailClient(QMainWindow):
                                 deletedFrom TEXT
                             )''')
 
-            # E-Mail aus der Tabelle des Benutzers abrufen
             cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username} WHERE eid = ?", (eid,))
             email = cursor.fetchone()
 
             if email:
-                # E-Mail in die Tabelle "deletedMails" einfügen
                 cursor.execute(f"INSERT INTO deletedMails (eid, sender, subject, content, sent_date, deletedFrom) VALUES (?, ?, ?, ?, ?, ?)",
                                 (eid, *email, username))
-                # E-Mail aus der Tabelle des Benutzers löschen
                 cursor.execute(f"DELETE FROM {username} WHERE eid = ?", (eid,))
                 conn.commit()
 
-                # Element aus der Liste entfernen
                 self.email_list.takeItem(self.email_list.currentRow())
 
             conn.close()

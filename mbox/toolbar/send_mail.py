@@ -65,7 +65,7 @@ class EmailComposer(QMainWindow):
 
     def populate_user_list(self):
         # Verbindung zur SQLite-Datenbank herstellen
-        connection = sqlite3.connect('signup/logins.db')
+        connection = sqlite3.connect('mbox/login/logins.db')
         cursor = connection.cursor()
 
         # SQL-Abfrage zum Abrufen aller Benutzernamen und E-Mail-Adressen
@@ -89,7 +89,7 @@ class EmailComposer(QMainWindow):
 
     def search_in_db(self, recipient):
         # Verbindung zur SQLite-Datenbank herstellen
-        connection = sqlite3.connect('signup/logins.db')
+        connection = sqlite3.connect('mbox/login/logins.db')
         cursor = connection.cursor()
 
         # SQL-Abfrage zum Suchen der Eingabe in den Spalten 1 und 2

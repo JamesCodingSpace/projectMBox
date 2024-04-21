@@ -1,4 +1,4 @@
 import subprocess
 
 if __name__ == "__main__":
-    subprocess.run(["python", "signup/login.py"])
+    subprocess.run(["python", "mbox/login/login.py"])

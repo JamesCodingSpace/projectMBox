@@ -14,7 +14,7 @@ def logout():
         with open("mbox/settings/settings.txt", "w") as file:
             file.write("Logged Out")
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
-        subprocess.run(["python", "signup/login.py"])
+        subprocess.run(["python", "mbox/login/login.py"])
     if confirm == QMessageBox.No: 
         os.kill(pid_search("app_main.py"))
         subprocess.run(["python", "mbox/app_main.py"])

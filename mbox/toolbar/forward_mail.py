@@ -40,7 +40,7 @@ class EmailReply(QMainWindow):
         input_layout.addWidget(self.content_input)
 
         self.reply_button = QPushButton("Antworten")
-        self.reply_button.clicked.connect(self.send_reply)
+        self.reply_button.clicked.connect(self.send_forward)
         input_layout.addWidget(self.reply_button)
 
         main_layout.addLayout(input_layout)
@@ -83,7 +83,7 @@ class EmailReply(QMainWindow):
             username = username_email.split(' ')[0]
             self.recipient_input.setText(username)
 
-    def send_reply(self):
+    def send_forward(self):
         sender = get_user()
         recipient = self.recipient_input.text()
         subject = self.subject_input.text()
@@ -104,7 +104,7 @@ class EmailReply(QMainWindow):
         conn.commit()
         conn.close()
 
-        os.kill(pid_search("answer_mail.py"), signal.SIGTERM)
+        os.kill(pid_search("forward_mail.py"), signal.SIGTERM)
 
 
 def main():
@@ -114,6 +114,7 @@ def main():
     sender = None
     subject = None
     content = None
+    date = None
     for line in data:
         if line.startswith("Sender:"):
             sender = line.split(": ")[1]
@@ -121,16 +122,17 @@ def main():
             subject = line.split(": ")[1]
         elif line.startswith("Content:"):
             content = line.split(": ")[1]
+        elif line.startswith("Date:"):
+            date = line.split(": ")[1]
     os.remove("mbox/toolbar/email_data.tmp")
 
     if sender and subject and content:
         reply_window = EmailReply()
-        reply_window.recipient_input.setText(sender)
-        reply_window.subject_input.setText("Re: " + subject)
-        reply_window.content_input.setPlainText(f"\n\nHallo {sender}\nSie schrieben mir:\n\n" + content)
+        reply_window.subject_input.setText("Fwd: " + subject)
+        reply_window.content_input.setPlainText(f"\n\nAm {date}\nschrieb mir {sender}:\n\n" + content)
         reply_window.show()
         pid = os.getpid()
-        pid_new_id("answer_mail.py", pid)
+        pid_new_id("forward_mail.py", pid)
         sys.exit(app.exec_())
     
 

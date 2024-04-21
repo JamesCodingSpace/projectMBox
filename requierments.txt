@@ -1,18 +1,16 @@
 High Prio:
-mails weiterleiten {same framework as answer_mail.py}
-
-
-Mid Prio:
-gelöschte Emails anschauen + recovern
-reload button? (emails aktuallisieren) -> eigentlich unnötig, aber für testing ganz geil
-settings.txt + pids.txt + theme.txt(?) -> settings.db
-
-Low Prio:
-Theme verändern? -> Butter der durchswitched ziwschen Hell und Dunkel
 delete account? -> Passwortabfrage als Bestätigung
 change password? -> nur von login zugegriffen (delete acc maybe auch bald)
 change email? -> easy, da mail nur optisch vorhanden
 change username? -> hart, da mails auf Nutzernamen DB gespeichert wird
+=> NOT WORKING SO FAR 
+
+Mid Prio:
+gelöschte Emails anschauen + recovern
+settings.txt + pids.txt + theme.txt(?) -> settings.db
+
+Low Prio:
+Theme verändern? -> Butter der durchswitched ziwschen Hell und Dunkel
 login log? -> Uhrzeiten dokumentieren, wann sich wer angemeldet hat (kinda useless, aber als letztes hab keine Idee mehr gut)
 Verschlüsselung Passwörter
 
