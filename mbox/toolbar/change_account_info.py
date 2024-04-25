@@ -27,8 +27,8 @@ class AccountSettings(QWidget):
         cursor = conn.cursor()
 
         username = get_user()
-        cursor.execute(f"SELECT * FROM logins WHERE username=?", (username,))
-        result = cursor.fetchone()
+        cursor.execute(f"SELECT * FROM logins WHERE username=?", (username,)) #Lösungsansätze: 1. statt * wirklich nur nötiges rausziehen und dann neu einfügen
+        result = cursor.fetchone()                                            #2. User Speziefische ID einfügen, welche sich nicht verändert und damit den Change unten machen
 
         if result is None:
             QMessageBox.warning(self, 'Fehler', 'Benutzername nicht gefunden.')

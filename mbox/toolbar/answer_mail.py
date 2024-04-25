@@ -96,7 +96,7 @@ class EmailReply(QMainWindow):
         conn = sqlite3.connect("mbox/emails.db")
         cursor = conn.cursor()
 
-        sent_date = datetime.now()
+        sent_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         rndm_eid = random.randint(1,1000000000000)
 
         cursor.execute(f"INSERT INTO {recipient} (eid, sender, subject, content, sent_date) VALUES (?, ?, ?, ?, ?)",

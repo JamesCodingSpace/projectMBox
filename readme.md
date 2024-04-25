@@ -36,9 +36,7 @@ Stand jetzt gibt es folgende Funktionen, welche auch funktionieren sollten:
 # Geplant
 
 Muss
-- Weiterleiten von E-Mails
 - Gelöschte Emails anschauen + recovern
-- Aktuallisierungs Button
 
 Soll
 - Verschlüsselte Passwörter bei Anmeldung

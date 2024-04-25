@@ -1,6 +1,7 @@
 import sys
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
+from premade_mails import insert_dummy_emails 
 
 class RegisterTerminal(QWidget):
     def __init__(self):
@@ -84,7 +85,9 @@ class RegisterTerminal(QWidget):
         else:
             self.save_to_database(name, email, password)
             self.create_email_table(name)
+            insert_dummy_emails(name)
             QMessageBox.information(self, "Registrierung erfolgreich", "Ihr Konto wurde erfolgreich erstellt.")
+            sys.exit(app.exec_())
 
     def check_existing(self, email, name):
         self.cursor_logins.execute("SELECT * FROM logins WHERE email=? OR username=?", (email, name))
