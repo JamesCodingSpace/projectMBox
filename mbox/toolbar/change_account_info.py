@@ -27,31 +27,28 @@ class AccountSettings(QWidget):
         cursor = conn.cursor()
 
         username = get_user()
-        cursor.execute(f"SELECT * FROM logins WHERE username=?", (username,)) #Lösungsansätze: 1. statt * wirklich nur nötiges rausziehen und dann neu einfügen
+        cursor.execute(f"SELECT userid FROM logins WHERE username=?", (username,)) #Lösungsansätze: 1. statt * wirklich nur nötiges rausziehen und dann neu einfügen
         result = cursor.fetchone()                                            #2. User Speziefische ID einfügen, welche sich nicht verändert und damit den Change unten machen
-
-        if result is None:
-            QMessageBox.warning(self, 'Fehler', 'Benutzername nicht gefunden.')
-            return
+        if result is not None:
+            result = result[0]
 
         if new_name:
-            cursor.execute("UPDATE logins SET username=? WHERE username=?", (new_name, result[0]))
+            cursor.execute("UPDATE logins SET username=? WHERE userid=?", (new_name, result,))
             rename_table("mbox/emails.db", username, new_name)
 
         if new_email:
-            cursor.execute("UPDATE logins SET email=? WHERE username=?", (new_email, new_name))
+            cursor.execute("UPDATE logins SET email=? WHERE userid=?", (new_email, result,))
 
         if new_password:
-            cursor.execute("UPDATE logins SET password=? WHERE username=?", (new_password, new_name))
-
-        conn.commit()
-        conn.close()
+            cursor.execute(f"UPDATE logins SET password=? WHERE userid=?", (new_password, result,))
 
         with open("mbox/settings/settings.txt", "w") as file:
             file.write("Logged Out")
-        subprocess.run(["python", "mbox/login/login.py"])
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
         QMessageBox.information(self, 'Erfolg', 'Änderungen wurden gespeichert.')
+        subprocess.run(["python", "mbox/login/login.py"])
+        conn.commit()
+        conn.close()
         os.kill(pid_search("change_account_info.py"), signal.SIGTERM)
 
     def delete_account(self):

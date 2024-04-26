@@ -2,6 +2,7 @@ import sys
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 from premade_mails import insert_dummy_emails 
+import random
 
 class RegisterTerminal(QWidget):
     def __init__(self):
@@ -51,7 +52,8 @@ class RegisterTerminal(QWidget):
                                 id INTEGER PRIMARY KEY,
                                 username TEXT NOT NULL,
                                 email TEXT NOT NULL,
-                                password TEXT NOT NULL
+                                password TEXT NOT NULL,
+                                userid INTEGER NOT NULL
                              )''')
         self.connection_logins.commit()
 
@@ -96,7 +98,7 @@ class RegisterTerminal(QWidget):
 
     def save_to_database(self, name, email, password):
         name = name.replace(" ", "_")
-        self.cursor_logins.execute("INSERT INTO logins (username, email, password) VALUES (?, ?, ?)", (name, email, password))
+        self.cursor_logins.execute("INSERT INTO logins (username, email, password, userid) VALUES (?, ?, ?, ?)", (name, email, password, random.randint(1, 1000000)))
         self.connection_logins.commit()
 
 

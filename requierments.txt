@@ -22,8 +22,8 @@ Change Acc Info (Name, Mail, Password, Delete)
 => Funktion vorhanden. FEHLER: logins.db wird nicht richtig bearbeitet, alte Tabelle in emails.db (noch) nicht gelöscht
 
 Workflow order:
-change_account_info fertigstellen
-settings.db einführen
+change_account_info fertigstellen => testing noch nötig 
+settings.db einführen 
 deleted_mails einbauen
 Theme verändern
 Verschlüsselung

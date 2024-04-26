@@ -47,7 +47,8 @@ class LoginTerminal(QWidget):
                                 id INTEGER PRIMARY KEY,
                                 username TEXT NOT NULL,
                                 email TEXT NOT NULL,
-                                password TEXT NOT NULL
+                                password TEXT NOT NULL,
+                                userid INTEGER NOT NULL
                              )''')
         self.connection.commit()
 
