@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import sqlite3
+import signal
 
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 
@@ -75,18 +76,36 @@ class LoginTerminal(QWidget):
         subprocess.run(["python", "mbox/login/signup.py"])
 
     def save_loggedin_user(self, username):
-        with open("mbox/settings/settings.txt", "w") as file:
-            file.write(f"Benutzername: {username}\n")    
+        # Verbindung zur SQLite-Datenbank herstellen
+        connection = sqlite3.connect("mbox/settings/settings.db")
+        cursor = connection.cursor()
+
+        # Überprüfen, ob die Tabelle user existiert, andernfalls erstellen
+        cursor.execute('''CREATE TABLE IF NOT EXISTS user (
+                            id INTEGER PRIMARY KEY,
+                            username TEXT
+                            )''')
+
+        # Benutzernamen in die Tabelle einfügen oder aktualisieren
+        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", (username,))
+        connection.commit()
+        connection.close()  
 
     def __del__(self):
         self.connection.close()
+
+    def loggedout(self):
+        connection = sqlite3.connect("mbox/settings/settings.db")
+        cursor = connection.cursor()
+        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", ("Logged Out"))
+        connection.commit()
+        connection.close() 
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = LoginTerminal()
     window.show()
-    with open("mbox/settings/settings.txt", "w") as file:
-        file.write("Logged Out")
     pid = os.getpid()
     pid_new_id("login.py", pid)
     sys.exit(app.exec_())

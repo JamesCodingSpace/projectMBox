@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 import os
 import subprocess
 import signal
+import sqlite3
 sys.path.append("mbox/settings")
 from pid import pid_search
 
@@ -10,9 +11,11 @@ def logout():
     confirm = QMessageBox.question(None, "Abmelden", "Möchten Sie sich wirklich abmelden?",
     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
     if confirm == QMessageBox.Yes:
-        # Datei überschreiben
-        with open("mbox/settings/settings.txt", "w") as file:
-            file.write("Logged Out")
+        connection = sqlite3.connect("mbox/settings/settings.db")
+        cursor = connection.cursor()
+        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", ("Logged Out"))
+        connection.commit()
+        connection.close() 
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
         subprocess.run(["python", "mbox/login/login.py"])
     if confirm == QMessageBox.No: 

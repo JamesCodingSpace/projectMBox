@@ -205,8 +205,11 @@ class EmailClient(QMainWindow):
         subprocess.run(["python", "mbox/settings/credits.py"])
 
     def shutdown(self):
-        with open("mbox/settings/settings.txt", "w") as file:
-            file.write("Logged Out")
+        connection = sqlite3.connect("mbox/settings/settings.db")
+        cursor = connection.cursor()
+        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", ("Logged Out"))
+        connection.commit()
+        connection.close() 
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
 
     def on_email_selected(self):

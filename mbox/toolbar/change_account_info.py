@@ -33,26 +33,38 @@ class AccountSettings(QWidget):
             result = result[0]
 
         if new_name:
-            cursor.execute("UPDATE logins SET username=? WHERE userid=?", (new_name, result,))
+            print(new_name)
+            cursor.execute(f"UPDATE logins SET username=? WHERE userid=?", (new_name, result,))
             rename_table("mbox/emails.db", username, new_name)
+            print("finish1")
 
         if new_email:
-            cursor.execute("UPDATE logins SET email=? WHERE userid=?", (new_email, result,))
+            print(new_email)
+            cursor.execute(f"UPDATE logins SET email=? WHERE userid=?", (new_email, result,))
+            print("finish2")
 
         if new_password:
+            print(new_password)
             cursor.execute(f"UPDATE logins SET password=? WHERE userid=?", (new_password, result,))
+            print("finish3")
 
-        with open("mbox/settings/settings.txt", "w") as file:
-            file.write("Logged Out")
-        os.kill(pid_search("app_main.py"), signal.SIGTERM)
-        QMessageBox.information(self, 'Erfolg', 'Änderungen wurden gespeichert.')
-        subprocess.run(["python", "mbox/login/login.py"])
         conn.commit()
         conn.close()
-        os.kill(pid_search("change_account_info.py"), signal.SIGTERM)
+
+        os.kill(pid_search("app_main.py"), signal.SIGTERM)
+        subprocess.run(["python", "mbox/login/login.py"])
+        sys.exit(app.exec_())
 
     def delete_account(self):
-        QMessageBox.warning(self, 'Achtung', 'Sind Sie sicher, dass Sie Ihren Account löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.')
+        reply = QMessageBox.question(self, 'Achtung', 
+            'Sind Sie sicher, dass Sie Ihren Account löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+        # Hier könntest du den Code einfügen, der den Account löscht
+            print("Account gelöscht")
+        else:
+            None
 
     def __init__(self):
         super().__init__()

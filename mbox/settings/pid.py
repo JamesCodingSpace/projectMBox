@@ -1,3 +1,5 @@
+import sqlite3
+
 def pid_search(program):
     with open("mbox/settings/pids.txt", 'r') as file:
         for line in file:
@@ -27,9 +29,15 @@ def pid_new_id(program, new_id):
         file.writelines(lines)
 
 def get_user():
-    with open("mbox/settings/settings.txt", 'r') as file:
-        for line in file:
-            parts = line.strip().split(": ")
-            if parts[0] == "Benutzername":
-                return parts[1]
-    return None
+    try:
+        connection = sqlite3.connect("mbox/settings/settings.db")
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT username FROM user")
+        result = cursor.fetchone()
+
+        if result:
+            return result[0]
+    finally:
+        if connection:
+            connection.close()

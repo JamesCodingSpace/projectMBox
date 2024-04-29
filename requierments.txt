@@ -1,19 +1,18 @@
 High Prio:
-delete account? -> Passwortabfrage als Bestätigung
-change password? -> nur von login zugegriffen (delete acc maybe auch bald)
-change email? -> easy, da mail nur optisch vorhanden
-change username? -> hart, da mails auf Nutzernamen DB gespeichert wird
-=> NOT WORKING SO FAR 
+delete account? -> del von table in email.db + del von eintrag in logins.db
+=> Sollte funktionieren (?Test nicht eindeutig?), schließt sich noch nicht von alleine, hilfsdatei zum schließen über login.py?
 
 Mid Prio:
 gelöschte Emails anschauen + recovern -> extra Fenster aus dem early state ohne Toolbar verwenden. Toolbar hinzufügen mit 2 Buttons (Recover, Delete perm)
 settings.txt + pids.txt + theme.txt(?) -> settings.db (schwer umzusetzten, da viele Dateien auf settings.txt zugreifen in Funktion get_user -> get_user umschreiben?)
+=> settings.txt wurde umgeformt zu settings.db
 
 Low Prio:
 Theme verändern? -> Button der durchswitched ziwschen Hell und Dunkel (settings.db vorher implementieren -> tabelle "user_theme" mit spalte "theme" [Dark, Light])
 login log? -> Uhrzeiten dokumentieren, wann sich wer angemeldet hat (kinda useless, aber als letztes "hab keine Idee mehr" gut)
 Verschlüsselung Passwörter -> sha256? Schwer, jedoch machbar und Aufwertung des Projektes
 Verschlüsselung Emails till login complete
+Mails mit Stern makieren können (?) => DB umstruckturierung + eine Spalte "Favorit" (Grafische Umsetzung schwer), sort danach
 
 Angefangen:
 Start E-Mails beim erstellen eines Acc (Willkommen, Instructions, Information)
@@ -22,8 +21,8 @@ Change Acc Info (Name, Mail, Password, Delete)
 => Funktion vorhanden. FEHLER: logins.db wird nicht richtig bearbeitet, alte Tabelle in emails.db (noch) nicht gelöscht
 
 Workflow order:
-change_account_info fertigstellen => testing noch nötig 
-settings.db einführen 
+change_account_info fertigstellen => testing noch nötig + del acc
+settings.db einführen => settings.txt schon eingebaut, pids + theme noch notwendig
 deleted_mails einbauen
 Theme verändern
 Verschlüsselung

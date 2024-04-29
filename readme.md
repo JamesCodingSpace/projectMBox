@@ -28,6 +28,7 @@ Stand jetzt gibt es folgende Funktionen, welche auch funktionieren sollten:
 - Senden, Antworten, Weiterleiten von Emails
 - Löschen von Emails
 - Reload von Emails
+- Verändern von Account Information (Password, E-Mail, Name)
 - Logout
 - Shutdown
 - Credits
@@ -41,7 +42,6 @@ Muss
 Soll
 - Verschlüsselte Passwörter bei Anmeldung
 - Delete Account
-- Change Account Information
 
 Kann
 - Anhang zu E-Mails hinzufügbar
