@@ -2,6 +2,7 @@ import subprocess
 import sys
 import sqlite3
 import signal
+from datetime import datetime
 
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 
@@ -14,6 +15,7 @@ class LoginTerminal(QWidget):
         super().__init__()
         self.setWindowTitle("Login Terminal")
         self.init_ui()
+        self.close_change_account_info()
         self.create_database()
 
     def init_ui(self):
@@ -40,6 +42,17 @@ class LoginTerminal(QWidget):
 
         self.setLayout(layout)
 
+    def close_change_account_info(self):
+        if os.path.exists("mbox/toolbar/close_window.tmp"):
+            try:
+                with open("mbox/toolbar/close_window.tmp", 'r') as file:
+                    for line in file:
+                        if 'close' in line:
+                                os.kill(pid_search("change_account_info.py"), signal.SIGTERM)
+                                os.remove("mbox/toolbar/close_window.tmp")
+            finally:
+                None               
+
     def create_database(self):
         self.connection = sqlite3.connect("mbox/login/logins.db")
         self.cursor = self.connection.cursor()
@@ -65,7 +78,10 @@ class LoginTerminal(QWidget):
             if password == stored_password:
                 self.save_loggedin_user(username)
                 QMessageBox.information(self, "Login erfolgreich", f"Herzlich willkommen, {username}!")
-                subprocess.run(["python", "mbox/app_main_test.py"])
+                time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                with open ("mbox/login/login.log", "a") as file:
+                    file.write(f"{time}: {username}\n")    
+                subprocess.run(["python", "mbox/app_main.py"])
                 sys.exit(app.exec_())
             else:
                 QMessageBox.warning(self, "Login fehlgeschlagen", "Ungültiges Passwort.")

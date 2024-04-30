@@ -7,16 +7,12 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle('PyQt5 Beispiel')
-
-        # Ein Layout erstellen, um das Label zu platzieren
         layout = QVBoxLayout(self)
 
-        # Label erstellen und Text setzen
         self.label = QLabel('Mbox! made by \nMadeleine Reuther and Tom Vogel!', self)
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
 
-        # Fenstergröße an den Text anpassen
         self.adjustSize()
 
 if __name__ == '__main__':

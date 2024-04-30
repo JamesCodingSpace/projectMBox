@@ -13,7 +13,7 @@ def logout():
     if confirm == QMessageBox.Yes:
         connection = sqlite3.connect("mbox/settings/settings.db")
         cursor = connection.cursor()
-        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", ("Logged Out"))
+        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", (" "))
         connection.commit()
         connection.close() 
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
@@ -22,11 +22,8 @@ def logout():
         os.kill(pid_search("app_main.py"))
         subprocess.run(["python", "mbox/app_main.py"])
 
-# GUI initialisieren
 app = QApplication(sys.argv)
 
-# Dialogfenster anzeigen
 logout()
 
-# GUI beenden
 sys.exit(app.exec_())

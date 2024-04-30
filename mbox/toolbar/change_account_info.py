@@ -9,6 +9,10 @@ sys.path.append("mbox/settings")
 from pid import pid_new_id, pid_search, get_user
 
 class AccountSettings(QWidget):
+    def close_window(self):
+        with open("mbox/toolbar/close_window.tmp", "w") as file:
+            file.write("close")
+
     def confirm_changes(self):
         new_name = self.input_name.text().strip()
         new_email = self.input_email.text().strip()
@@ -27,42 +31,60 @@ class AccountSettings(QWidget):
         cursor = conn.cursor()
 
         username = get_user()
-        cursor.execute(f"SELECT userid FROM logins WHERE username=?", (username,)) #Lösungsansätze: 1. statt * wirklich nur nötiges rausziehen und dann neu einfügen
-        result = cursor.fetchone()                                            #2. User Speziefische ID einfügen, welche sich nicht verändert und damit den Change unten machen
+        cursor.execute(f"SELECT userid FROM logins WHERE username=?", (username,)) # Fehler: Bei User @Test wurde Mail, Pw und Name nicht verändert -> Bei user Jamie jedoch schon => hängt fest im code?
+        result = cursor.fetchone()                                            
         if result is not None:
             result = result[0]
 
         if new_name:
-            print(new_name)
+            print(new_name) # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
             cursor.execute(f"UPDATE logins SET username=? WHERE userid=?", (new_name, result,))
             rename_table("mbox/emails.db", username, new_name)
-            print("finish1")
+            print("finish1") # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
 
         if new_email:
-            print(new_email)
+            print(new_email) # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
             cursor.execute(f"UPDATE logins SET email=? WHERE userid=?", (new_email, result,))
-            print("finish2")
+            print("finish2") # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
 
         if new_password:
-            print(new_password)
+            print(new_password) # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
             cursor.execute(f"UPDATE logins SET password=? WHERE userid=?", (new_password, result,))
-            print("finish3")
+            print("finish3") # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
 
         conn.commit()
         conn.close()
 
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
+        self.close_window()
         subprocess.run(["python", "mbox/login/login.py"])
         sys.exit(app.exec_())
 
     def delete_account(self):
+        username = get_user()
+        conn = sqlite3.connect('mbox/login/logins.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT userid FROM logins WHERE username=?", (username,))
+        result = cursor.fetchone()
+        result = result[0]
+
         reply = QMessageBox.question(self, 'Achtung', 
             'Sind Sie sicher, dass Sie Ihren Account löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.',
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
         if reply == QMessageBox.Yes:
-        # Hier könntest du den Code einfügen, der den Account löscht
-            print("Account gelöscht")
+            cursor.execute('''DELETE FROM logins WHERE userid=?''', (result,))
+            conn.commit()
+            conn.close()
+            conn = sqlite3.connect('mbox/emails.db')
+            cursor = conn.cursor()
+            cursor.execute(f'''DROP TABLE IF EXISTS {username}''')
+            conn.commit()
+            conn.close()
+            os.kill(pid_search("app_main.py"), signal.SIGTERM)
+            self.close_window()
+            subprocess.run(["python", "mbox/login/login.py"])
+            sys.exit(app.exec_())
         else:
             None
 

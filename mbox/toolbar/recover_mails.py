@@ -4,17 +4,16 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QListWidget, Q
 from PyQt5.QtCore import Qt
 import subprocess
 import os
-import signal
 
 sys.path.append("mbox/settings")
-from pid import pid_new_id, pid_search, get_user
+from pid import pid_new_id, get_user
 
-class EmailClient(QMainWindow):
+class EmailRecover(QMainWindow):
     def __init__(self):
         username = get_user()
         super().__init__()
-        self.setWindowTitle(f"E-Mail Postfach von {username}")
-        self.setGeometry(100, 100, 800, 600)
+        self.setWindowTitle(f"Gelöschte E-Mails von {username}")
+        self.setGeometry(100, 100, 600, 400)
 
         self.create_toolbar()
 
@@ -67,34 +66,16 @@ class EmailClient(QMainWindow):
         self.toolbar.addSeparator()
 
         settings_menu = QMenu()
-        deleted_mails = QAction("Gelöschte E-Mails", self)
-        deleted_mails.triggered.connect(self.deleted_email_screen)
-        settings_menu.addAction(deleted_mails)
-        change_theme = QAction("Design verändern", self)
-        change_theme.triggered.connect(self.change_theme_action)
-        settings_menu.addAction(change_theme)
-        account_information = QAction("Account Info ändern", self)
-        account_information.triggered.connect(self.change_account_information)
-        settings_menu.addAction(account_information)
         reload_mail = QAction("E-Mails Aktualisieren", self)
         reload_mail.triggered.connect(self.reload_emails)
         settings_menu.addAction(reload_mail)
-        logout_action = QAction("Abmelden", self)
-        logout_action.triggered.connect(self.logout)
-        settings_menu.addAction(logout_action)
-        shutdown_action = QAction("Schließen", self)
-        shutdown_action.triggered.connect(self.shutdown)
-        settings_menu.addAction(shutdown_action)
-        credits_action = QAction("Credits", self)
-        credits_action.triggered.connect(self.show_credits)
-        settings_menu.addAction(credits_action)
     
         settings_action = QAction("Einstellungen", self)
         settings_action.setMenu(settings_menu)
         self.toolbar.addAction(settings_action)
 
-        new_email_action = QAction("E-Mail Schreiben", self)
-        new_email_action.triggered.connect(self.write_email)
+        new_email_action = QAction("E-Mail Wiederherstellen", self)
+        new_email_action.triggered.connect(self.recover_mail)
         self.toolbar.addAction(new_email_action)
 
         self.reply_action = QAction("Antworten", self)
@@ -107,25 +88,44 @@ class EmailClient(QMainWindow):
         self.forward_action.triggered.connect(self.forward_email)
         self.toolbar.addAction(self.forward_action)
 
-        self.delete_email_action = QAction("E-Mail Löschen", self)
-        self.delete_email_action.triggered.connect(self.delete_email)
+        self.delete_email_action = QAction("E-Mail Permanent Löschen", self)
+        self.delete_email_action.triggered.connect(self.perm_delete_email)
         self.delete_email_action.setVisible(False)
         self.toolbar.addAction(self.delete_email_action)
 
     def load_emails(self, username):
         conn = sqlite3.connect('mbox/emails.db')
         cursor = conn.cursor()
-        cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username} ORDER BY sent_date DESC")
+        cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM deletedMails WHERE deletedFrom=? ORDER BY sent_date DESC", (username,))
         emails = cursor.fetchall()
         for email in emails:
-            eid, sender, subject, _, _ = email
+            eid, sender, subject, _, _= email
             item = QListWidgetItem(f"{sender}\n{subject}")
             item.setData(Qt.UserRole, eid)
             self.email_list.addItem(item)
         conn.close()
 
-    def write_email(self):
-        subprocess.run(["python", "mbox/toolbar/send_mail.py"])
+    def recover_mail(self):
+        selected_item = self.email_list.currentItem()
+        if selected_item:
+            eid = selected_item.data(Qt.UserRole)
+            username = get_user()
+
+            conn = sqlite3.connect('mbox/emails.db')
+            cursor = conn.cursor()
+
+            cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM deletedMails WHERE eid=?", (eid,))
+            email = cursor.fetchone()
+
+            if email:
+                cursor.execute(f"INSERT INTO {username} (eid, sender, subject, content, sent_date) VALUES (?, ?, ?, ?, ?)",
+                                (*email,))
+                cursor.execute(f"DELETE FROM deletedMails WHERE eid = ?", (eid,))
+                conn.commit()
+
+                self.email_list.takeItem(self.email_list.currentRow())
+
+            conn.close() 
 
     def get_email_data(self):
         selected_item = self.email_list.currentItem()
@@ -134,7 +134,7 @@ class EmailClient(QMainWindow):
         conn = sqlite3.connect("mbox/emails.db")
         cursor = conn.cursor()
         with open("mbox/toolbar/email_data.tmp", "w") as file:
-            cursor.execute(f"SELECT sender, subject, content, sent_date FROM {username} WHERE eid = {eid}")
+            cursor.execute(f"SELECT sender, subject, content, sent_date FROM deletedMails WHERE eid = {eid}")
             for row in cursor.fetchall():
                 sender, subject, content, sent_date = row
                 file.write(f"Sender: {sender}\n")
@@ -155,62 +155,20 @@ class EmailClient(QMainWindow):
         username = get_user()
         self.email_list.clear()
         self.load_emails(username)
-
-    def deleted_email_screen (self):
-        None
-
-    def change_theme_action(self):
-        None
-
-    def change_account_information(self):
-        subprocess.run(["python","mbox/toolbar/check_user_password.py"])
-
-    def delete_email(self):
+      
+    def perm_delete_email(self):   # verändern zum permanenten löschen statt verschieben => Test noch notwendig
         selected_item = self.email_list.currentItem()
         if selected_item:
             eid = selected_item.data(Qt.UserRole)
-            username = get_user()
 
             conn = sqlite3.connect('mbox/emails.db')
             cursor = conn.cursor()
 
-            cursor.execute('''CREATE TABLE IF NOT EXISTS deletedMails (
-                                id INTEGER PRIMARY KEY,
-                                eid FLOAT,
-                                sender TEXT,
-                                subject TEXT,
-                                content TEXT,
-                                sent_date TEXT,
-                                deletedFrom TEXT
-                            )''')
+            cursor.execute('''DELETE FROM deletedMails WHERE eid=?''', (eid,))
+            conn.commit()
 
-            cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username} WHERE eid = ?", (eid,))
-            email = cursor.fetchone()
-
-            if email:
-                cursor.execute(f"INSERT INTO deletedMails (eid, sender, subject, content, sent_date, deletedFrom) VALUES (?, ?, ?, ?, ?, ?)",
-                                (eid, *email, username))
-                cursor.execute(f"DELETE FROM {username} WHERE eid = ?", (eid,))
-                conn.commit()
-
-                self.email_list.takeItem(self.email_list.currentRow())
-
+            self.email_list.takeItem(self.email_list.currentRow())
             conn.close()
-
-
-    def logout(self):
-        subprocess.run(["python", "mbox/settings/logout.py"])
-
-    def show_credits(self):
-        subprocess.run(["python", "mbox/settings/credits.py"])
-
-    def shutdown(self):
-        connection = sqlite3.connect("mbox/settings/settings.db")
-        cursor = connection.cursor()
-        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", ("Logged Out"))
-        connection.commit()
-        connection.close() 
-        os.kill(pid_search("app_main.py"), signal.SIGTERM)
 
     def on_email_selected(self):
         selected_item = self.email_list.currentItem()
@@ -219,7 +177,7 @@ class EmailClient(QMainWindow):
             username = get_user()
             conn = sqlite3.connect("mbox/emails.db")
             cursor = conn.cursor()
-            cursor.execute(f"SELECT sender, subject, content, sent_date FROM {username} WHERE eid = {eid}")
+            cursor.execute(f"SELECT sender, subject, content, sent_date FROM deletedMails WHERE eid=?", (eid,))
             result = cursor.fetchone()
             conn.close()
 
@@ -250,11 +208,10 @@ class EmailClient(QMainWindow):
 
 def main():
     app = QApplication(sys.argv)
-    client = EmailClient()
-    client.show()
+    recover = EmailRecover()
+    recover.show()
     pid = os.getpid()
-    pid_new_id("app_main.py", pid)
-    os.kill(pid_search("login.py"), signal.SIGTERM)
+    pid_new_id("recover_mails.py", pid)
     sys.exit(app.exec_())
 
 if __name__ == "__main__":

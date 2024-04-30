@@ -1,6 +1,6 @@
 import sys
 import sqlite3
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QListWidget, QTextEdit, QVBoxLayout, QWidget, QListWidgetItem, QLabel, QAction, QToolBar, QMenu, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter, QListWidget, QTextEdit, QVBoxLayout, QWidget, QListWidgetItem, QLabel, QAction, QToolBar, QMenu, QPushButton, QMessageBox
 from PyQt5.QtCore import Qt
 import subprocess
 import os
@@ -157,13 +157,13 @@ class EmailClient(QMainWindow):
         self.load_emails(username)
 
     def deleted_email_screen (self):
-        None
+        subprocess.run(["python", "mbox/toolbar/recover_mails.py"])
 
     def change_theme_action(self):
-        None
+        QMessageBox.information(self, "Funktion ist leider noch nicht verfügbar :(\nIst aber bald verfügbar ^^")
 
     def change_account_information(self):
-        None
+        subprocess.run(["python","mbox/toolbar/check_user_password.py"])
 
     def delete_email(self):
         selected_item = self.email_list.currentItem()
@@ -184,7 +184,7 @@ class EmailClient(QMainWindow):
                                 deletedFrom TEXT
                             )''')
 
-            cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username} WHERE eid = ?", (eid,))
+            cursor.execute(f"SELECT sender, subject, content, sent_date FROM {username} WHERE eid = ?", (eid,))
             email = cursor.fetchone()
 
             if email:
@@ -205,8 +205,11 @@ class EmailClient(QMainWindow):
         subprocess.run(["python", "mbox/settings/credits.py"])
 
     def shutdown(self):
-        with open("mbox/settings/settings.txt", "w") as file:
-            file.write("Logged Out")
+        connection = sqlite3.connect("mbox/settings/settings.db")
+        cursor = connection.cursor()
+        cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", (" "))
+        connection.commit()
+        connection.close() 
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
 
     def on_email_selected(self):

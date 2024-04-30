@@ -1,3 +1,6 @@
+# Datei nur dafür das Database anzulegen für Testzwecke oder einmalig als Speicher von Daten
+
+
 import sqlite3
 
 
