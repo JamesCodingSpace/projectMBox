@@ -1,3 +1,5 @@
+# Sehr ähnlich zu Send Mail, lediglich wird der Empfänger schon vorher eingetragen und der Email Inhalt wird nochmals wiedergegeben
+
 import sys
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QTextEdit, QPushButton, QListWidget, QListWidgetItem, QHBoxLayout

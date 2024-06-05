@@ -1,3 +1,5 @@
+# Nur nochmal dazu da das Passwort des Users abzufragen, bevor er etwas an seinen Account Details verändern kann
+
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
 import sqlite3

@@ -13,7 +13,7 @@ class AccountSettings(QWidget):
         with open("mbox/toolbar/close_window.tmp", "w") as file:
             file.write("close")
 
-    def confirm_changes(self):
+    def confirm_changes(self): # Überprüft ob der User Daten verändern möchte und verändert sie dann entsprechend. Bei neuem username wird auch die Tabelle in "emails.db" "umbenannt"
         new_name = self.input_name.text().strip()
         new_email = self.input_email.text().strip()
         new_password = self.input_new_password.text().strip()
@@ -31,26 +31,26 @@ class AccountSettings(QWidget):
         cursor = conn.cursor()
 
         username = get_user()
-        cursor.execute(f"SELECT userid FROM logins WHERE username=?", (username,)) # Fehler: Bei User @Test wurde Mail, Pw und Name nicht verändert -> Bei user Jamie jedoch schon => hängt fest im code?
+        cursor.execute(f"SELECT userid FROM logins WHERE username=?", (username,)) # Fehler: Bei User @Test wurde Mail, Pw und Name nicht verändert -> Bei user Tom jedoch schon => hängt fest im code?
         result = cursor.fetchone()                                            
         if result is not None:
             result = result[0]
 
         if new_name:
-            print(new_name) # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
+            print(new_name) # überprüfung ob code bis heirhin ausgefühlt wird => Debug
             cursor.execute(f"UPDATE logins SET username=? WHERE userid=?", (new_name, result,))
             rename_table("mbox/emails.db", username, new_name)
-            print("finish1") # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
+            print("finish1") # überprüfung ob code bis heirhin ausgefühlt wird => Debug
 
         if new_email:
-            print(new_email) # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
+            print(new_email) # überprüfung ob code bis heirhin ausgefühlt wird => Debug
             cursor.execute(f"UPDATE logins SET email=? WHERE userid=?", (new_email, result,))
-            print("finish2") # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
+            print("finish2") # überprüfung ob code bis heirhin ausgefühlt wird => Debug
 
         if new_password:
-            print(new_password) # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
+            print(new_password) # überprüfung ob code bis heirhin ausgefühlt wird => Debug
             cursor.execute(f"UPDATE logins SET password=? WHERE userid=?", (new_password, result,))
-            print("finish3") # überprüfung ob code bis heirhin ausgefühlt wird => später noch entfernen
+            print("finish3") # überprüfung ob code bis heirhin ausgefühlt wird => Debug
 
         conn.commit()
         conn.close()
@@ -60,7 +60,7 @@ class AccountSettings(QWidget):
         subprocess.run(["python", "mbox/login/login.py"])
         sys.exit(app.exec_())
 
-    def delete_account(self):
+    def delete_account(self): # löscht sowohl Eintrag in Logins.db, als auch die Tabelle in emails.db
         username = get_user()
         conn = sqlite3.connect('mbox/login/logins.db')
         cursor = conn.cursor()

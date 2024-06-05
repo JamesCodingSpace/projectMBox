@@ -63,7 +63,7 @@ class EmailComposer(QMainWindow):
         widget.setLayout(main_layout)
         self.setCentralWidget(widget)
 
-    def populate_user_list(self):
+    def populate_user_list(self): # Liste der existierenden User
         # Verbindung zur SQLite-Datenbank herstellen
         connection = sqlite3.connect('mbox/login/logins.db')
         cursor = connection.cursor()
@@ -80,14 +80,14 @@ class EmailComposer(QMainWindow):
 
         connection.close()
 
-    def fill_recipient_field(self):
+    def fill_recipient_field(self): # Füllt nach anklicken in der Liste der User den Username in das Empfänger Feld
         selected_item = self.user_list_widget.currentItem()
         if selected_item:
             username_email = selected_item.text()
             username = username_email.split(' ')[0]
             self.recipient_input.setText(username)
 
-    def search_in_db(self, recipient):
+    def search_in_db(self, recipient): # Überprüft ob der Empfänger existiert. Dabei ist es egal ob der Username oder die Email verwendet wurde
         # Verbindung zur SQLite-Datenbank herstellen
         connection = sqlite3.connect('mbox/login/logins.db')
         cursor = connection.cursor()
@@ -105,7 +105,7 @@ class EmailComposer(QMainWindow):
             connection.close()
             return None
 
-    def send_email(self):
+    def send_email(self): # Fügt Email mit Inhalt, Betreff und Sendedatum in die Tabelle des Empfängers ein
         sender = get_user()
         recipient_input = self.recipient_input.text()
         recipient = self.search_in_db(recipient_input)
@@ -120,7 +120,7 @@ class EmailComposer(QMainWindow):
         cursor = conn.cursor()
 
         sent_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        rndm_eid = random.randint(1,1000000000000)
+        rndm_eid = random.randint(1,1000000000000) # eid steht für emial id
 
         # Einfügen der E-Mail in die Datenbank
         cursor.execute(f"INSERT INTO {recipient} (eid, sender, subject, content, sent_date) VALUES (?, ?, ?, ?, ?)",

@@ -5,9 +5,9 @@ import random
 import sqlite3
 from datetime import datetime
 
-def insert_dummy_emails(table_name):
+def insert_dummy_emails(table_name): # Fügt Emails beim Erstellen eines Acc in dessen Datenbank, sodass jeder Acc am Anfang vorgefertige Emails hat
     emails = []
-    with open("mbox/login/premade_emails.txt", 'r') as file:
+    with open("mbox/login/premade_emails.txt", 'r') as file: # ließt Emails aus "premade_emails.txt" aus
         for line in file:
             parts = line.strip().split(', ')
             subject = parts[0].split(': ')[1]

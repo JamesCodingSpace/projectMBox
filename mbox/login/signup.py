@@ -42,12 +42,10 @@ class RegisterTerminal(QWidget):
 
         self.setLayout(layout)
 
-    def create_database(self):
-        # Connect to the logins database
+    def create_database(self): # Erstellt sofern noch nicht vorhanden die Logins Datenbank
         self.connection_logins = sqlite3.connect("mbox/login/logins.db")
         self.cursor_logins = self.connection_logins.cursor()
 
-        # Create logins table if not exists
         self.cursor_logins.execute('''CREATE TABLE IF NOT EXISTS logins (
                                 id INTEGER PRIMARY KEY,
                                 username TEXT NOT NULL,
@@ -57,13 +55,11 @@ class RegisterTerminal(QWidget):
                              )''')
         self.connection_logins.commit()
 
-    def create_email_table(self, name):
-        # Connect to the emails database
+    def create_email_table(self, name): # Erstellt eigene Tabelle in Emails.db für den neuen User
         self.connection_emails = sqlite3.connect("mbox/emails.db")
         self.cursor_emails = self.connection_emails.cursor()
 
-        # Create table for the user's emails
-        table_name = name.replace(" ", "_")  # Replace spaces in name with underscores for table name
+        table_name = name.replace(" ", "_") 
         self.cursor_emails.execute(f'''CREATE TABLE IF NOT EXISTS {table_name} (
                                     id INTEGER PRIMARY KEY,
                                     eid FLOAT NOT NULL,
@@ -74,7 +70,7 @@ class RegisterTerminal(QWidget):
                                  )''')
         self.connection_emails.commit()
 
-    def register(self):
+    def register(self): # Funktion Registrierung
         name = self.name_input.text()
         email = self.email_input.text()
         password = self.password_input.text()
@@ -91,12 +87,12 @@ class RegisterTerminal(QWidget):
             QMessageBox.information(self, "Registrierung erfolgreich", "Ihr Konto wurde erfolgreich erstellt.")
             sys.exit(app.exec_())
 
-    def check_existing(self, email, name):
+    def check_existing(self, email, name): # Überprüft ob User oder Email bereits vergeben ist
         self.cursor_logins.execute("SELECT * FROM logins WHERE email=? OR username=?", (email, name))
         user_info = self.cursor_logins.fetchone()
         return user_info is not None
 
-    def save_to_database(self, name, email, password):
+    def save_to_database(self, name, email, password): # Speichert neuen User in der Datenbank
         name = name.replace(" ", "_")
         self.cursor_logins.execute("INSERT INTO logins (username, email, password, userid) VALUES (?, ?, ?, ?)", (name, email, password, random.randint(1, 1000000)))
         self.connection_logins.commit()

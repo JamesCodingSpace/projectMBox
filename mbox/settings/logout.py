@@ -7,7 +7,7 @@ import sqlite3
 sys.path.append("mbox/settings")
 from pid import pid_search
 
-def logout():
+def logout(): # Meldet User ab und speichert, dass es abgemeldet wurde. Schließt die Mailbox und öffnet das Login Fenster erneut
     confirm = QMessageBox.question(None, "Abmelden", "Möchten Sie sich wirklich abmelden?",
     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
     if confirm == QMessageBox.Yes:

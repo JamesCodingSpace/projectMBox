@@ -1,20 +1,18 @@
 # E-Mail Box
-_made by **Jamie**_
+von Madeleine Reuther und Tom Vogel
 
 ****
 # Erklärung
 
-Hallo Madeleine,
-
-hier meine Version der E-Mail Box für euch.
-Grundlegend kann man alles noch verändern, somit bitte einmal drüber schauen und bescheid sagen ob so alles passt.
-Grafisch ist es natürlich nicht die krasseste Anwendung, aber dafür übersichtlich und verständlich.
+Guten Tag,
+dies ist unsere kleine E-Mail Box.
+Zum ausführen bitte "main.py" starten und vorher PyQT5 installieren.
 
 ****
 
-Je nach Stärke der Hardware kann das Programm teilweiße bis zu 3 Sekunden brauchen bis es eine Aktion ausführt,
-also nicht direkt erschrecken sondern kurz inne halten.
-Bitte testet trotzdem einmal alles was ihr dann auch vorstellen müsst, dass Fehler ausgeschlossen werden können.
+Je nach Stärke der Hardware kann das Programm teilweiße bis zu 2 Sekunden brauchen bis es eine Aktion ausführt,
+also nicht direkt erschrecken, sondern kurz inne halten.
+Manche Funktionen sind noch leicht Fehleranfäliig.
 
 ****
 
@@ -44,11 +42,5 @@ Stand jetzt gibt es folgende Funktionen:
 - Change Account Info hatte Probleme sich richtig zu schließen
 => kann passieren dass es einen close loop gibt beim starten der Anwendung
 FALLS JA
-Datei unter ".../mbox/toolbar/close_window.tmp" löschen
+Die Datei unter ".../mbox/toolbar/close_window.tmp" löschen
 
-****
-# Technische Fragen
-
-Sollten Fragen zur Funktionalität aufkommen, bitte bescheid sagen.
-Ich habe versucht jede Zeile Code dahinter mit einem Kommentar zu erklären.
-Code sollte oftmals zusätzlich kommentiert sein

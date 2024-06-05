@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
 from PyQt5.QtCore import Qt
 
-class MainWindow(QWidget):
+class MainWindow(QWidget): # Öffnet kleines Fenster in dem die Credits angezeigt werden
     def __init__(self):
         super().__init__()
 

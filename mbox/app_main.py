@@ -10,8 +10,8 @@ sys.path.append("mbox/settings")
 from pid import pid_new_id, pid_search, get_user
 
 class EmailClient(QMainWindow):
-    def __init__(self):
-        username = get_user()
+    def __init__(self): # Eigenschaften des Fensters bestimmen
+        username = get_user() # Username erhalten
         super().__init__()
         self.setWindowTitle(f"E-Mail Postfach von {username}")
         self.setGeometry(100, 100, 800, 600)
@@ -43,7 +43,7 @@ class EmailClient(QMainWindow):
 
         self.load_emails(username)
 
-    def create_toolbar(self):
+    def create_toolbar(self): # Toolbar mit Buttons oben hinzufügen
         self.toolbar = self.addToolBar("Toolbar")
 
         self.sort_button = QPushButton("Sortieren", self)
@@ -112,22 +112,22 @@ class EmailClient(QMainWindow):
         self.delete_email_action.setVisible(False)
         self.toolbar.addAction(self.delete_email_action)
 
-    def load_emails(self, username):
+    def load_emails(self, username): # Funktion, welche die Emails des Users aus der Datenbank abfrägt
         conn = sqlite3.connect('mbox/emails.db')
         cursor = conn.cursor()
         cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM {username} ORDER BY sent_date DESC")
         emails = cursor.fetchall()
-        for email in emails:
+        for email in emails: # Fügt die Emails in der Liste Links hinzu
             eid, sender, subject, _, _ = email
             item = QListWidgetItem(f"{sender}\n{subject}")
             item.setData(Qt.UserRole, eid)
             self.email_list.addItem(item)
         conn.close()
 
-    def write_email(self):
+    def write_email(self): # öffnet anderes Fenster
         subprocess.run(["python", "mbox/toolbar/send_mail.py"])
 
-    def get_email_data(self):
+    def get_email_data(self): # Speichert die Informationen der geöffneten Email kurzeitig ab, um sie an andere Unterprogramme weiter zu leiten
         selected_item = self.email_list.currentItem()
         eid = selected_item.data(Qt.UserRole)
         username = get_user()
@@ -143,29 +143,29 @@ class EmailClient(QMainWindow):
                 file.write(f"Date: {sent_date}\n")
             conn.close()
 
-    def reply_email(self):
+    def reply_email(self): # öffnet anderes Fenster
         self.get_email_data()
         subprocess.run(["python", "mbox/toolbar/answer_mail.py"])
 
-    def forward_email(self):
+    def forward_email(self): # öffnet anderes Fenster
         self.get_email_data()
         subprocess.run(["python", "mbox/toolbar/forward_mail.py"])
 
-    def reload_emails(self):
+    def reload_emails(self): # aktualisiert Email Liste Links (notwendig nach Wiederherstellung einer Email oder nach dem Empfang einer neuen Email)
         username = get_user()
         self.email_list.clear()
         self.load_emails(username)
 
-    def deleted_email_screen (self):
+    def deleted_email_screen (self): # öffnet anderes Fenster
         subprocess.run(["python", "mbox/toolbar/recover_mails.py"])
 
-    def change_theme_action(self):
-        QMessageBox.information(self, "Funktion ist leider noch nicht verfügbar :(\nIst aber bald verfügbar ^^")
+    def change_theme_action(self): # Funktion war geplant, konnte wegen Zeitgründen nicht umgesetzt werden (sollte die Hintergrund Farben des Programs verändern Dark Mode etc)
+        None
 
-    def change_account_information(self):
+    def change_account_information(self): # öffnet anderes Fenster
         subprocess.run(["python","mbox/toolbar/check_user_password.py"])
 
-    def delete_email(self):
+    def delete_email(self): # löscht eine Email aus der Liste und fügt sie in die deleted Mails Tabelle ein, sodass sie später wiederhergestellt werden kann
         selected_item = self.email_list.currentItem()
         if selected_item:
             eid = selected_item.data(Qt.UserRole)
@@ -198,13 +198,13 @@ class EmailClient(QMainWindow):
             conn.close()
 
 
-    def logout(self):
+    def logout(self): # öffnet anderes Fenster
         subprocess.run(["python", "mbox/settings/logout.py"])
 
-    def show_credits(self):
+    def show_credits(self): # öffnet anderes Fenster
         subprocess.run(["python", "mbox/settings/credits.py"])
 
-    def shutdown(self):
+    def shutdown(self): # schließt das Program nachdem der User abgemeldet wurde
         connection = sqlite3.connect("mbox/settings/settings.db")
         cursor = connection.cursor()
         cursor.execute("INSERT OR REPLACE INTO user (id, username) VALUES (1, ?)", (" "))
@@ -212,7 +212,7 @@ class EmailClient(QMainWindow):
         connection.close() 
         os.kill(pid_search("app_main.py"), signal.SIGTERM)
 
-    def on_email_selected(self):
+    def on_email_selected(self): # Ließt den Text (Content) der ausgewälten Email aus und stellt es im großen Feld dar
         selected_item = self.email_list.currentItem()
         if selected_item:
             eid = selected_item.data(Qt.UserRole)
@@ -232,7 +232,7 @@ class EmailClient(QMainWindow):
                 self.forward_action.setVisible(True)
                 self.delete_email_action.setVisible(True)
 
-    def sort_emails(self, column):
+    def sort_emails(self, column): # sortiert die Emails in der Liste nach dem angegebenen Punkt
         self.email_list.clear()
         username = get_user()
         conn = sqlite3.connect('mbox/emails.db')
@@ -248,7 +248,7 @@ class EmailClient(QMainWindow):
             self.email_list.addItem(item)
 
 
-def main():
+def main(): # startet die Anwedung
     app = QApplication(sys.argv)
     client = EmailClient()
     client.show()

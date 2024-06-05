@@ -1,6 +1,6 @@
 import sqlite3
 
-def pid_search(program):
+def pid_search(program): # lässt ein Unterprogram nach der PID eines anderen suchen 
     with open("mbox/settings/pids.txt", 'r') as file:
         for line in file:
             if line.strip().startswith(f'P: {program},'):
@@ -9,7 +9,7 @@ def pid_search(program):
                 return pid_int
     return None
 
-def pid_new_id(program, new_id):
+def pid_new_id(program, new_id): # Speichert die PID eines neuen Fensters
     entry_exists = False
     new_line = f'P: {program}, ID: {new_id}\n'
 
@@ -28,7 +28,7 @@ def pid_new_id(program, new_id):
     with open("mbox/settings/pids.txt", 'w') as file:
         file.writelines(lines)
 
-def get_user():
+def get_user(): # Abfrage, welcher User momentan angemeldet ist
     try:
         connection = sqlite3.connect("mbox/settings/settings.db")
         cursor = connection.cursor()

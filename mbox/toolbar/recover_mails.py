@@ -93,7 +93,7 @@ class EmailRecover(QMainWindow):
         self.delete_email_action.setVisible(False)
         self.toolbar.addAction(self.delete_email_action)
 
-    def load_emails(self, username):
+    def load_emails(self, username): # lädt die gelöschten Emails des aktiven Users in ein sehr ähnlich aussehendes Fenster
         conn = sqlite3.connect('mbox/emails.db')
         cursor = conn.cursor()
         cursor.execute(f"SELECT eid, sender, subject, content, sent_date FROM deletedMails WHERE deletedFrom=? ORDER BY sent_date DESC", (username,))
@@ -105,7 +105,7 @@ class EmailRecover(QMainWindow):
             self.email_list.addItem(item)
         conn.close()
 
-    def recover_mail(self):
+    def recover_mail(self): # Fügt die Mail wieder in die Tabelle des Users ein
         selected_item = self.email_list.currentItem()
         if selected_item:
             eid = selected_item.data(Qt.UserRole)
@@ -127,7 +127,7 @@ class EmailRecover(QMainWindow):
 
             conn.close() 
 
-    def get_email_data(self):
+    def get_email_data(self): # selbiges wie bei app_mail.py
         selected_item = self.email_list.currentItem()
         eid = selected_item.data(Qt.UserRole)
         username = get_user()
@@ -143,11 +143,11 @@ class EmailRecover(QMainWindow):
                 file.write(f"Date: {sent_date}\n")
             conn.close()
 
-    def reply_email(self):
+    def reply_email(self): # öffnet neues Fenster
         self.get_email_data()
         subprocess.run(["python", "mbox/toolbar/answer_mail.py"])
 
-    def forward_email(self):
+    def forward_email(self): # öffnet neues Fenster
         self.get_email_data()
         subprocess.run(["python", "mbox/toolbar/forward_mail.py"])
 
@@ -156,7 +156,7 @@ class EmailRecover(QMainWindow):
         self.email_list.clear()
         self.load_emails(username)
       
-    def perm_delete_email(self):   # verändern zum permanenten löschen statt verschieben => Test noch notwendig
+    def perm_delete_email(self):  # löscht Emails permanent
         selected_item = self.email_list.currentItem()
         if selected_item:
             eid = selected_item.data(Qt.UserRole)

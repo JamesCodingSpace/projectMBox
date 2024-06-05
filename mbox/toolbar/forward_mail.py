@@ -1,3 +1,5 @@
+# Sehr ähnlich zu Send Mail, alter Email Inhalt wird bereits in das Feld Inhalt eingetragen 
+
 import sys
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit, QTextEdit, QPushButton, QListWidget, QListWidgetItem, QHBoxLayout
